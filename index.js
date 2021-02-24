@@ -162,6 +162,7 @@ app.post('/patients/register', (req, res) =>
     var patientgender = req.body.gender;
     var patientdiseases = req.body.diseases;
     var patientallergies = req.body.allergies;
+    var patientward = req.body.wardnumber;
 
     console.log(req.body);
 
@@ -249,7 +250,8 @@ app.post('/patients/register', (req, res) =>
                                 "diseases": req.body.diseases,
                                 "allergies": req.body.allergies,
                                 "registeredby": req.body.userid,
-                                "registeredon": new Date(Date.now())                                                                                                                            
+                                "registeredon": new Date(Date.now()),
+                                "wardnumber": new ObjectID(req.body.wardnumber)                                                                                                                            
                             };
 
                             // Insert a single document, wait for promise so we can read it back
