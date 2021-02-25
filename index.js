@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 
 
 // Set application listening port
-const port = 8081;
+const port = 8088;
 app.listen(port, () => {
 
     console.log(`Task API app is listening at http://localhost:${port}`);
@@ -406,3 +406,54 @@ app.get('/patients/:recordnumber', (req, res) => {
 
 // pushing to jira test
 
+	//MODULE-4
+	//PATIENT REFERRALS
+	app.put('/patients/referals/:recordnumber', (req, res) => {
+    
+		//authentication
+		var userid = req.body.userid; 
+		var sessiontoken = req.body.sessiontoken;
+		var recordnumber = req.params.recordnumber; 
+		console.log(req.query);
+	
+		async function run() {
+			try {
+				await client.connect();
+				console.log("Connected correctly to server");
+				const db = client.db(DB_NAME);
+	   
+				// Use the collection "patients", "sessions"
+				const colPatients = db.collection("patients");
+				const colSessions = db.collection("sessions");
+	
+			   // Find one document by userid and sessiontoken
+			   const sessionDocument = await colSessions.findOne({ $and: [{userid:{ $eq: new ObjectID(req.query.userid) }}, {sessiontoken:{$eq: req.query.sessiontoken}}] });
+			   if(!sessionDocument)
+			   {
+				   // wrong session details
+				   responseObject['message'] = "Request denied. See error for details.";
+				   responseObject['error'] = "Invalid session.";
+			   }
+			   else if(new Date(Date.now()) > sessionDocument.expiry)
+			   {
+				   // session timed out
+				   responseObject['message'] = "Request denied. See error for details.";
+				   responseObject['error'] = "Session expired. Please log in again.";
+			   }
+			   else {
+				   
+	
+			   }
+			}
+			catch {
+	
+			}
+			finally {
+				//await client.close();
+	
+			}
+	
+			// send response object
+			res.send(responseObject);
+		}
+	});
