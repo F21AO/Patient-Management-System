@@ -458,14 +458,15 @@ app.put('/patients/referals/:recordnumber', (req, res) => {
                     "referedby" : userid,
                     "services": services
                 }
-
+                console.log(recordnumber);
                 //find and update the patient document with referals details
                 const patientDocument = await colPatients.findOneAndUpdate(
-                    { _id: recordnumber},
+                    { _id: ObjectID(recordnumber)},
                     {$set: {"referals": referals}},
                     {returnNewDocument:true}
                 );
-
+                console.log(patientDocument.referals);
+                console.log(patientDocument.email);
                 if(!patientDocument)
                 {
                     // record not found
