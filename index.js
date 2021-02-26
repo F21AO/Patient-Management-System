@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 
 
 // Set application listening port
-const port = 8088;
+const port = 8084;
 app.listen(port, () => {
 
     console.log(`Task API app is listening at http://localhost:${port}`);
@@ -340,7 +340,8 @@ app.get('/patients/:recordnumber', (req, res) => {
 	         // Use the collection "patients", "sessions"
 	         const colPatients = db.collection("patients");
              const colSessions = db.collection("sessions");
-
+             const colServices = db.collection("services");
+             const colUsers    = db.collection("users");
             // Find one document by userid and sessiontoken
             const sessionDocument = await colSessions.findOne({ $and: [{userid:{ $eq: new ObjectID(req.query.userid) }}, {sessiontoken:{$eq: req.query.sessiontoken}}] });
             if(!sessionDocument)
@@ -361,6 +362,7 @@ app.get('/patients/:recordnumber', (req, res) => {
                 // access allowed 
                 // Find document by recordnumber
                 const patientDocument = await colPatients.findOne({_id:{ $eq: new ObjectID(req.params.recordnumber) }});
+                
                 if(!patientDocument)
                 {
                     // record not found
@@ -372,7 +374,37 @@ app.get('/patients/:recordnumber', (req, res) => {
                     // record found
                     responseObject['message'] = "Request successful.";
                     responseObject['error'] = "None.";
+                    
+                    var referals = {};
+                    if(patientDocument.referals) {
+                        
+                        if(patientDocument.referals.services){
+                            //let objectIdArray = stringObjectIdArray.map(s => mongoose.Types.ObjectId(s));
+                            //performing the map function cause services is an array
+                            var serviceIds = patientDocument.referals.services.map(function(id) { return ObjectID(id); });
+                            var services = await colServices.find({_id: {$in: serviceIds}}).toArray();
+                           // console.log(serviceIds);
+                            console.log(services);
+                            referals["services"] = services;
+                        }
+                        if(patientDocument.referals.referedby){
+                            var referby = await colUsers.findOne({_id: {$eq: ObjectID(patientDocument.referals.referedby)}});
+                            console.log(patientDocument.referals.referedby);
+                            console.log(referby);
+                            if(referby) {
+                                referals["referedby"] = referals["referedby"] = {
+                                    name : referby.name,
+                                    _id:   referby._id
+                                    };
+                            
+                            }
 
+                        }
+                       
+                        
+                    }
+                    
+                  
                     // create patient object and push to response object
                     var patientObject = {};
                     patientObject['recordnumber'] = patientDocument._id;
@@ -382,7 +414,8 @@ app.get('/patients/:recordnumber', (req, res) => {
                     patientObject['birthdate'] = patientDocument.birthdate;
                     patientObject['diseases'] = patientDocument.diseases;
                     patientObject['allergies'] = patientDocument.allergies;
-                    responseObject['patient'] = patientDocument;
+                    patientObject['referals'] = referals;
+                    responseObject['patient'] = patientObject;
                 }    
                          
             }
@@ -408,7 +441,7 @@ app.get('/patients/:recordnumber', (req, res) => {
 // pushing to jira test
 
 //MODULE-4
-//PATIENT REFERALS
+//POPULATING ADDITIONAL DISEASES
 app.put('/patients/referals/:recordnumber', (req, res) => {
 
     //authentication
@@ -458,15 +491,16 @@ app.put('/patients/referals/:recordnumber', (req, res) => {
                     "referedby" : userid,
                     "services": services
                 }
-                console.log(recordnumber);
+
                 //find and update the patient document with referals details
                 const patientDocument = await colPatients.findOneAndUpdate(
                     { _id: ObjectID(recordnumber)},
                     {$set: {"referals": referals}},
                     {returnNewDocument:true}
                 );
-                console.log(patientDocument.referals);
-                console.log(patientDocument.email);
+                console.log("i am here");
+                console.log(patientDocument);
+
                 if(!patientDocument)
                 {
                     // record not found
