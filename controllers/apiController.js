@@ -14,10 +14,10 @@ class apiController {
     try {
 
       // create response object with welcome text
-      //var responseObject = {};
-      apiController.responseObject['message'] = "Welcome to the Patient Management System!";
-      apiController.responseObject['error'] = "None";
-      res.send(apiController.responseObject);
+      var responseObject = {};
+      responseObject['message'] = "Welcome to the Patient Management System!";
+      responseObject['error'] = "None";
+      res.send(responseObject);
     } catch (exception) {
       res.status(500);
       res.send(exception);
