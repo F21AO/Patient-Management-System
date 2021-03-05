@@ -11,11 +11,9 @@ const DB_NAME = "patients";
 class usersController {
 
   static async userlogin(req, res) {
-    console.log("Post made - LOGIN");
     // Fetch query parameter
     var username = req.body.username; 
     var password = req.body.password;
-    console.log(req.body);
 
     // create response object with initial values
     var responseObject = {};
@@ -60,7 +58,6 @@ class usersController {
                 // Find inserted document
                 const findSession = await colSessions.findOne({ userid: { $eq: sessionDocument.userid } });
                 // Print to the console
-                console.log(findSession);
 
                 if(!findSession)
                 {

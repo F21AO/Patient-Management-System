@@ -200,12 +200,14 @@ class patientsController {
 	         console.log("Connected correctly to server");
 	         const db = client.db(DB_NAME);
 	
-	         // Use the collection "patients", "sessions"
+	         // Use the collection "patients", "sessions", "services"
 	         const colPatients = db.collection("patients");
              const colSessions = db.collection("sessions");
+             const colServices = db.collection("services");
+             const colUsers    = db.collection("users");
 
             // Find one document by userid and sessiontoken
-            const sessionDocument = await colSessions.findOne({ $and: [{userid:{ $eq: new ObjectID(req.query.userid) }}, {sessiontoken:{$eq: req.query.sessiontoken}}] });
+            const sessionDocument = await colSessions.findOne({ $and: [{userid:{ $eq: new ObjectID(userid) }}, {sessiontoken:{$eq: sessiontoken}}] });
             if(!sessionDocument)
             {
                 // wrong session details
@@ -225,7 +227,8 @@ class patientsController {
                 // session found 
                 // access allowed 
                 // Find document by recordnumber
-                const patientDocument = await colPatients.findOne({_id:{ $eq: new ObjectID(req.params.recordnumber) }});
+                const patientDocument = await colPatients.findOne({_id:{ $eq: new ObjectID(recordnumber) }});
+                console.log(patientDocument);
                 if(!patientDocument)
                 {
                     // record not found
@@ -239,6 +242,30 @@ class patientsController {
                     responseObject['message'] = "Request successful.";
                     responseObject['error'] = "None.";
 
+                    //append patient refarals details to response object
+                    var referals = {};
+                    if(patientDocument.referals) {
+                        
+                        if(patientDocument.referals.services){
+                            //performing the map function cause services is an array
+                            var serviceIds = patientDocument.referals.services.map(function(id) { return ObjectID(id); });
+                            var services = await colServices.find({_id: {$in: serviceIds}}).toArray();
+
+                            console.log(services);
+                            referals["services"] = services;
+                        }
+                        if(patientDocument.referals.referedby) {
+                            var referby = await colUsers.findOne({_id: {$eq: ObjectID(patientDocument.referals.referedby)}});
+
+                            if(referby) {
+                                referals["referedby"] = referals["referedby"] = {
+                                    name : referby.name,
+                                    _id:   referby._id
+                                    };
+                            }
+                        }
+                    }
+
                     // create patient object and push to response object
                     var patientObject = {};
                     patientObject['recordnumber'] = patientDocument._id;
@@ -248,15 +275,18 @@ class patientsController {
                     patientObject['birthdate'] = patientDocument.birthdate;
                     patientObject['diseases'] = patientDocument.diseases;
                     patientObject['allergies'] = patientDocument.allergies;
-                    responseObject['patient'] = patientDocument;
+                    patientObject['referals'] = referals;
+                    responseObject['patient'] = patientObject;
                 }    
                          
             }
 
 	    }
         catch (err) {
-           res.status(500);
-	         console.log(err.stack);
+            res.status(500);
+            responseObject['message'] = "Request failed. See error for details.";
+            responseObject['error'] = "Invalid Request.";
+	        console.log(err.stack);
 	    }
 	    finally {
 	        //await client.close();
@@ -268,6 +298,90 @@ class patientsController {
 	}
 	
 	run().catch(console.dir);
+  }
+
+  static async patientreferals(req, res) {
+    //authentication
+    var userid = req.body.userid; 
+    var sessiontoken = req.body.sessiontoken;
+    var services = req.body.services;
+    var recordnumber = req.params.recordnumber; 
+
+    // create response object with initial values
+    var responseObject = {};
+    responseObject['message'] = "None";
+    responseObject['error'] = "None";
+
+    async function run() {
+	    try {
+	        
+            await client.connect();
+	        console.log("Connected correctly to server");
+	        const db = client.db(DB_NAME);
+	
+            // Use the collection "patients", "sessions"
+            const colPatients = db.collection("patients");
+            const colSessions = db.collection("sessions");
+
+            // Find one document by userid and sessiontoken
+            const sessionDocument = await colSessions.findOne({ $and: [{userid:{ $eq: new ObjectID(userid) }}, {sessiontoken:{$eq: sessiontoken}}] });
+            if(!sessionDocument)
+            {
+                // wrong session details
+                responseObject['message'] = "Request denied. See error for details.";
+                responseObject['error'] = "Invalid session.";
+            }
+            else if(new Date(Date.now()) > sessionDocument.expiry)
+            {
+                // session timed out
+                responseObject['message'] = "Request denied. See error for details.";
+                responseObject['error'] = "Session expired. Please log in again.";
+            }
+            else
+            {   
+                //create referals object
+                var referals = {
+                    "referedby" : userid,
+                    "services": services
+                }
+
+                //find and update the patient document with referals details
+                const patientDocument = await colPatients.findOneAndUpdate(
+                    { _id: ObjectID(recordnumber)},
+                    {$set: {"referals": referals}},
+                    {returnNewDocument:true}
+                );
+                console.log("i am here");
+                console.log(patientDocument);
+
+                if(!patientDocument)
+                {
+                    // record not found
+                    responseObject['message'] = "Request failed. See error for details.";
+                    responseObject['error'] = "A record with this number does not exist in the system.";
+                }
+                else
+                {
+                    //return success
+                    responseObject['message'] = "Request successful.";
+                    responseObject['error'] = "None.";
+                }            
+            }
+	    }
+        catch (err) {
+            res.status(500);
+	        console.log(err.stack);
+	    }
+	    finally {
+	        //await client.close();
+            
+	    }
+
+        // send response object
+        res.send(responseObject);
+    }
+
+    run().catch(console.dir);
   }
 }
 
