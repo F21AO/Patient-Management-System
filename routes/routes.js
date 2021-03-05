@@ -17,6 +17,8 @@ module.exports = function (app) {
 
   //Authenticate users to access the below routes
   app.use(authenticateUser.isAuthorized);
+
+  //Routes
   app.get("/patients/register", patientsController.patientsignup);
   app.get("/patients/:recordnumber", patientsController.patientlookup);
   app.get("/wards/admit", admissionsController.patientadmission);
