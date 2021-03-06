@@ -234,6 +234,46 @@ class patientsController {
                 patientObject['referals']     = referals;
                 responseObject['patient']     = patientObject;
             }
+            
+               //retrieve admissions details.
+               const colAdmissions = db.collection("admissions");
+               const admissionDocument = await colAdmissions.findOne({patientid:{ $eq: recordnumber }});
+               var admissions = {};
+
+               //if patient is admitted
+               if(admissionDocument) {
+                   const colWards = db.collection("wards");
+                   const wardDocument = await colWards.findOne({_id: {$eq: ObjectID(admissionDocument.wardid)}});
+                   console.log(wardDocument);
+                   //if ward is found
+                   if(wardDocument) {
+                       admissions["ward"] = wardDocument.name;
+                       console.log(wardDocument.name);
+                   }
+
+                   //if patient belongs to a department (doesn't belong to a special ward.)
+                   if(admissionDocument.deptid) {
+                       const colDepartments = db.collection("departments");
+                       const deptDocument = await colDepartments.findOne({_id: {$eq: ObjectID(admissionDocument.deptid)}});
+                       if(deptDocument) {
+                           admissions["department"] = deptDocument.deptname;
+                       }
+                   }
+               }
+
+               // create patient object and push to response object
+               var patientObject = {};
+               patientObject['recordnumber'] = patientDocument._id;
+               patientObject['email'] = patientDocument.email;
+               patientObject['name'] = patientDocument.name;
+               patientObject['gender'] = patientDocument.gender;
+               patientObject['birthdate'] = patientDocument.birthdate;
+               patientObject['diseases'] = patientDocument.diseases;
+               patientObject['allergies'] = patientDocument.allergies;
+               patientObject['referals'] = referals;
+               patientObject['admissions'] = admissions;
+               responseObject['patient'] = patientObject;
+              
 
 	    }
         catch (err) {
@@ -242,9 +282,9 @@ class patientsController {
             responseObject['error']   = "Invalid Request.";
 	        console.log(err.stack);
 	    }
-	    finally {
-	        // await client.close();
-	    }
+	    // finally {
+	    //     // await client.close();
+	    // }
 
         // send response object
         res.send(responseObject);
