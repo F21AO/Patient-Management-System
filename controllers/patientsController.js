@@ -9,27 +9,41 @@ const DB_NAME = "patients";
 
 
 class patientsController {
-
+  
+  // Function to register a new patient
   static async patientsignup(req, res) {
 
     console.log("Post made - REGISTER");
-    // Fetch query parameter
-    var userid = req.body.userid;
-    var patientfirstname = req.body.firstname;
-    var patientlastname = req.body.lastname;
-    var patientemail = req.body.email;
-    var patientbirthdate = req.body.birthdate;
-    var patientgender = req.body.gender;
-    var patientdiseases = req.body.diseases;
-    var patientallergies = req.body.allergies;
-    var patientward = req.body.wardnumber;
-
-    console.log(req.body);
 
     // create response object with initial values
     var responseObject = {};
     responseObject['message'] = "None";
-    responseObject['error'] = "None";
+    responseObject['error']   = "None";
+    
+    // Fetch query parameters
+    if(Object.hasOwnProperty.call(req.body, "userid") && Object.hasOwnProperty.call(req.body, "firstname") && Object.hasOwnProperty.call(req.body, "lastname") 
+    && Object.hasOwnProperty.call(req.body, "email") && Object.hasOwnProperty.call(req.body, "birthdate") && Object.hasOwnProperty.call(req.body, "gender")
+    && Object.hasOwnProperty.call(req.body, "diseases") && Object.hasOwnProperty.call(req.body, "allergies") && Object.hasOwnProperty.call(req.body, "wardnumber"))
+    {
+        var userid = req.body.userid;
+        var patientfirstname = req.body.firstname;
+        var patientlastname = req.body.lastname;
+        var patientemail = req.body.email;
+        var patientbirthdate = req.body.birthdate;
+        var patientgender = req.body.gender;
+        var patientdiseases = req.body.diseases;
+        var patientallergies = req.body.allergies;
+        var patientward = req.body.wardnumber;
+    }
+    else
+    {
+        // missing parameter details
+        responseObject['message'] = "Request denied. See error for details.";
+        responseObject['error'] = "Missing details in request body.";
+        res.status(400);
+        res.send(responseObject);
+        return;
+    }
 
     async function run() {
 	    try {
@@ -38,11 +52,10 @@ class patientsController {
             console.log("Connected correctly to server");
             const db = client.db(DB_NAME);
 	
-            // Use the collection "patients", "users", "sessions"
+            // Use the collection "patients", "users"
             const colPatients = db.collection("patients");
             const colUsers = db.collection("users");
 
-            // session found
             // Check access level by userid
             const accessDocument = await colUsers.findOne({_id:{ $eq: new ObjectID(userid) }});
             if(!accessDocument)
@@ -58,8 +71,8 @@ class patientsController {
                 {
                     // wrong access level
                     responseObject['message'] = "Request denied. See error for details.";
-                    responseObject['error'] = "Access forbidden. Only users with 'Clerk' access level can make this change.";
-                    res.status(403);
+                    responseObject['error'] = "Access forbidden. Only users with 'Clerk' access level are authorized to make this change.";
+                    res.status(401);
                 }
                 else
                 {
@@ -71,9 +84,9 @@ class patientsController {
                         // email already in system
                         responseObject['message'] = "Request denied. See error for details.";
                         responseObject['error']   = "A record with this email address already exists.";
-                        res.status(403);
+                        res.status(409);
 
-                        // create patient object and push to response object
+                        // create existing patient object and push to response object
                         var patientObject = {};
                         patientObject['recordnumber'] = existingDocument._id;
                         patientObject['email']        = existingDocument.email;
@@ -142,11 +155,15 @@ class patientsController {
             }
 
 	    }
-        catch (err) {
-           res.status(500);
-	         console.log(err.stack);
+        catch (err) 
+        {
+            res.status(500);
+            res.send(err);
+	        console.log(err.stack);
 	    }
-	    finally {
+	    finally 
+        {
+            // commentated because it causes issues in request reloads
 	        // await client.close();
 	    }
 
@@ -158,17 +175,30 @@ class patientsController {
     
   }
 
+  // Function to lookup a patient by recordnumber
   static async patientlookup(req, res) {
 
     console.log("Get made - PATIENT");
-    // Fetch query parameter
-    var recordnumber = req.params.recordnumber; 
-    console.log(req.query);
 
     // create response object with initial values
     var responseObject = {};
     responseObject['message'] = "None";
     responseObject['error']   = "None";
+    
+    // Fetch query parameter
+    if(req.params.hasOwnProperty('recordnumber'))
+    {
+        var recordnumber = req.params.recordnumber; 
+    }
+    else
+    {
+        // missing parameter details
+        responseObject['message'] = "Request denied. See error for details.";
+        responseObject['error'] = "Missing patient record number in request parameters. (example: /patients/<PATIIENT_RECORD_NUMBER>)";
+        res.status(400);
+        res.send(responseObject);
+        return;
+    }
 
     async function run() {
 	    try {
@@ -176,12 +206,11 @@ class patientsController {
             console.log("Connected correctly to server");
             const db = client.db(DB_NAME);
 
-            // Use the collection "patients", "sessions", "services"
+            // Use the collection "patients", "users", "services"
             const colPatients = db.collection("patients");
             const colServices = db.collection("services");
             const colUsers    = db.collection("users");
 
-            // access allowed 
             // Find document by recordnumber
             const patientDocument = await colPatients.findOne({_id:{ $eq: new ObjectID(recordnumber) }});
             console.log(patientDocument);
@@ -202,15 +231,17 @@ class patientsController {
                 var referals = {};
                 if(patientDocument.referals) {
                     
-                    if(patientDocument.referals.services){
-                        //performing the map function cause services is an array
+                    if(patientDocument.referals.services)
+                    {
+                        //performing the map function because services is an array
                         var serviceIds = patientDocument.referals.services.map(function(id) { return ObjectID(id); });
                         var services = await colServices.find({_id: {$in: serviceIds}}).toArray();
 
-                        console.log(services);
                         referals["services"] = services;
                     }
-                    if(patientDocument.referals.referedby) {
+                    
+                    if(patientDocument.referals.referedby)
+                     {
                         var referby = await colUsers.findOne({_id: {$eq: ObjectID(patientDocument.referals.referedby)}});
 
                         if(referby) {
@@ -276,15 +307,18 @@ class patientsController {
               
 
 	    }
-        catch (err) {
+        catch (err) 
+        {
             res.status(500);
             responseObject['message'] = "Request failed. See error for details.";
             responseObject['error']   = "Invalid Request.";
 	        console.log(err.stack);
 	    }
-	    // finally {
-	    //     // await client.close();
-	    // }
+	    finally 
+        {
+            // commentated because it causes issues in request reloads
+	        // await client.close();
+	    }
 
         // send response object
         res.send(responseObject);
@@ -293,16 +327,97 @@ class patientsController {
 	run().catch(console.dir);
   }
 
+  // Function to lookup a list of all patients
+  static async allpatients(req, res) {
+
+    console.log("Get made - PATIENTS");
+    
+    // create response object with initial values
+    var responseObject = {};
+    responseObject['message'] = "None";
+    responseObject['error']   = "None";
+
+    async function run() {
+	    try {
+            await client.connect();
+            console.log("Connected correctly to server");
+            const db = client.db(DB_NAME);
+
+            // Use the collection "patients", "users", "services"
+            const colPatients = db.collection("patients");
+
+            // Find document by recordnumber
+            const patientDocuments = await colPatients.find().toArray();
+            console.log(patientDocuments);
+            if(!patientDocuments)
+            {
+                // not found, something is VERY wrong!
+                responseObject['message'] = "Request failed. See error for details.";
+                responseObject['error']   = "No records found in the system. Contact system admin ASAP.";
+                res.status(404);
+            }
+            else if (patientDocuments.length > 0)
+            {
+                // record found
+                responseObject['message'] = "Request successful.";
+                responseObject['error']   = "None.";
+
+                // create patients object and push to response object
+                responseObject['patients']  = patientDocuments;
+            }
+            else
+            {
+                // 0 records found, something is VERY wrong!
+                responseObject['message'] = "Request failed. See error for details.";
+                responseObject['error']   = "No records found in the system. Contact system admin ASAP.";
+                res.status(404);
+            }
+
+	    }
+        catch (err) 
+        {
+            res.status(500);
+            responseObject['message'] = "Request failed. See error for details.";
+            responseObject['error']   = "Invalid Request.";
+	        console.log(err.stack);
+	    }
+	    finally 
+        {
+            // commentated because it causes issues in request reloads
+	        // await client.close();
+	    }
+
+        // send response object
+        res.send(responseObject);
+	}
+	
+	run().catch(console.dir);
+  }
+
+  // Function to update a patient's referral details by recordnumber
   static async patientreferals(req, res) {
-    //authentication
-    var referedby = req.body.referedby; 
-    var services = req.body.services;
-    var recordnumber = req.params.recordnumber; 
 
     // create response object with initial values
     var responseObject = {};
     responseObject['message'] = "None";
     responseObject['error'] = "None";
+    
+    // Fetch query parameter
+    if(Object.hasOwnProperty.call(req.body, "referedby") && Object.hasOwnProperty.call(req.body, "services") && Object.hasOwnProperty.call(req.body, "recordnumber"))
+    {
+        var referedby = req.body.referedby; 
+        var services = req.body.services;
+        var recordnumber = req.params.recordnumber; 
+    }
+    else
+    {
+        // missing parameter details
+        responseObject['message'] = "Request denied. See error for details.";
+        responseObject['error'] = "Missing details in request body.";
+        res.status(400);
+        res.send(responseObject);
+        return;
+    }
 
     async function run() {
 	    try {
@@ -331,6 +446,7 @@ class patientsController {
                 // record not found
                 responseObject['message'] = "Request failed. See error for details.";
                 responseObject['error']   = "A record with this number does not exist in the system.";
+                res.status(404);
             }
             else
             {

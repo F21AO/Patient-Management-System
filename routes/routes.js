@@ -18,11 +18,14 @@ module.exports = function (app) {
   //Authenticate users to access the below routes
   app.use(authenticateUser.isAuthorized);
 
-  //Routes
+  //Routes:
   app.post("/patients/register", patientsController.patientsignup);
   app.get("/patients/:recordnumber", patientsController.patientlookup);
-  app.post("/wards/admit", admissionsController.patientadmission);
-  app.get("/wards/:recordnumber", admissionsController.admissionlookup);
+  app.get("/patients", patientsController.allpatients);
   app.put("/patients/refer/:recordnumber", patientsController.patientreferals);
+  app.post("/wards/admit", admissionsController.patientadmission);
+  app.get("/wards/admissions", admissionsController.alladmissions);
+  app.get("/wards", admissionsController.allwards);
+  app.get("/wards/admissions/:recordnumber", admissionsController.admissionlookup);
 
 };
