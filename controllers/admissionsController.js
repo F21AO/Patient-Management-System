@@ -46,7 +46,8 @@ class admissionsController {
         return;
     }
 
-    async function run() {
+    async function run() 
+    {
 	    try {
 	        
             await client.connect();
@@ -92,8 +93,8 @@ class admissionsController {
                     "discharged": req.body.discharged,
                     "reason": req.body.reason,
                     "deptid": req.body.deptid
-                    // "registeredon": new Date(Date.now())                                                                                                                            
-                };
+                                                                                                                                               
+                };// "registeredon": new Date(Date.now()) 
 
                 // Insert a single document, wait for promise so we can read it back
                 const insertAdmissionDetails = await colAdmissions.insertOne(admissionDocument);
@@ -150,7 +151,8 @@ class admissionsController {
 	}
 	
 	run().catch(console.dir);
-  }
+  }//here
+  
 
 
   // Function to lookup an admission to a ward by recordnumber
@@ -165,15 +167,15 @@ class admissionsController {
     responseObject['error'] = "None";
 
     // Fetch query parameter
-    if(req.query.hasOwnProperty('recordnumber'))
+    if(req.params.hasOwnProperty('recordnumber'))
     {
-        var recordnumber = req.query.recordnumber; 
+        var recordnumber = req.params.recordnumber; 
     }
     else
     {
         // missing parameter details
         responseObject['message'] = "Request denied. See error for details.";
-        responseObject['error'] = "Missing patient record number in request parameters. (example: /patients/<PATIIENT_RECORD_NUMBER>)";
+        responseObject['error'] = "Missing record number in request parameters. (example: /wards/admissions/<RECORD_NUMBER>)";
         res.status(400);
         res.send(responseObject);
         return;
@@ -182,7 +184,8 @@ class admissionsController {
 
 
     async function run() {
-	    try {
+	    try 
+        {
 	        
             await client.connect();
 	         console.log("Connected correctly to server");
@@ -199,7 +202,7 @@ class admissionsController {
         
             // session found 
             // Find document by recordnumber
-            const patientDocument = await colPatients.findOne({_id:{ $eq: new ObjectID(req.query.recordnumber) }});
+            const patientDocument = await colPatients.findOne({_id:{ $eq: new ObjectID(req.params.recordnumber) }});
             if(!patientDocument)
             {
                 // record not found
@@ -231,7 +234,8 @@ class admissionsController {
             }    
         }
 	   // }
-        catch (err) {
+        catch (err) 
+        {
             res.status(500);
             res.send(err);
 	         console.log(err.stack);
@@ -240,6 +244,7 @@ class admissionsController {
 	        //await client.close();
             
 	    }
+
         // send response object
         res.send(responseObject);
 	}
@@ -258,8 +263,10 @@ class admissionsController {
     responseObject['message'] = "None";
     responseObject['error']   = "None";
 
-    async function run() {
-	    try {
+    async function run() 
+    {
+	    try 
+        {
             await client.connect();
             console.log("Connected correctly to server");
             const db = client.db(DB_NAME);
@@ -316,7 +323,8 @@ class admissionsController {
   }
 
   // Function to lookup a list of all wards
-  static async allwards(req, res) {
+  static async allwards(req, res) 
+  {
 
     console.log("Get made - WARDS");
     
@@ -325,8 +333,10 @@ class admissionsController {
     responseObject['message'] = "None";
     responseObject['error']   = "None";
 
-    async function run() {
-	    try {
+    async function run() 
+    {
+	    try 
+        {
             await client.connect();
             console.log("Connected correctly to server");
             const db = client.db(DB_NAME);
