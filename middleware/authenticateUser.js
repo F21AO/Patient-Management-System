@@ -44,10 +44,10 @@ module.exports.isAuthorized = async (req, res, next) => {
             // session found
             next();
         }
-    } catch {
+    } catch (err) {
         console.log(err.stack);
         responseObject['message'] = "Request denied. See error for details.";
-        responseObject['error'] = "Error occured. Please log in again.";
+        responseObject['error'] = err;
         res.status(500);
         res.send(responseObject);
     }
