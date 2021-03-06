@@ -16,7 +16,7 @@ class admissionsController {
     console.log("Post made - ADMIT");
     // Fetch query parameter
     var registeredby = req.body.registeredby; 
-    var sessiontoken = req.body.sessiontoken;
+    // var sessiontoken = req.body.sessiontoken;
     var patientid = req.body.patientid;
     var doctorid = req.body.doctorid;
     var wardid = req.body.wardid;
@@ -42,37 +42,26 @@ class admissionsController {
 	         // Use the collection "patients", "users", "sessions", "admissions"
 	         const colPatients = db.collection("patients");
              const colUsers = db.collection("users");
-             const colSessions = db.collection("sessions");
+             //const colSessions = db.collection("sessions");
              const colAdmissions = db.collection("admissions");
 
             // Find one document by userid and sessiontoken
-            const sessionDocument = await colSessions.findOne({sessiontoken:{$eq: req.body.sessiontoken} });
-            if(!sessionDocument)
-            {
-                // wrong session details
-                responseObject['message'] = "Request denied. See error for details.";
-                responseObject['error'] = "Invalid session.";
-            }
-            else if(new Date(Date.now()) > sessionDocument.expiry)
-            {
-                // session timed out
-                responseObject['message'] = "Request denied. See error for details.";
-                responseObject['error'] = "Session expired. Please log in again.";
-            }
-            else
-            {
-                // // session found 
-                // // Check access level by userid
-                // const accessDocument = await colUsers.findOne({_id:{ $eq: new ObjectID(req.body.userid) }});
-                // if(!accessDocument)
-                // {
-                //     // wrong user details
-                //     responseObject['message'] = "Request denied. See error for details.";
-                //     responseObject['error'] = "Cannot find user.";
-                // }
-                // else
-                // {
-                    
+            // const sessionDocument = await colSessions.findOne( {sessiontoken:{$eq: req.query.sessiontoken} });
+            // if(!sessionDocument)
+            // {
+            //     // wrong session details
+            //     responseObject['message'] = "Request denied. See error for details.";
+            //     responseObject['error'] = "Invalid session.";
+            // }
+            // else if(new Date(Date.now()) > sessionDocument.expiry)
+            // {
+            //     // session timed out
+            //     responseObject['message'] = "Request denied. See error for details.";
+            //     responseObject['error'] = "Session expired. Please log in again.";
+            // }
+            // else
+            // {
+
                     // access allowed 
                     // Check for duplicate record
                     const existingDocument = await colAdmissions.findOne({patientid:{ $eq: req.body.patientid }});
@@ -149,9 +138,8 @@ class admissionsController {
                     }
                   
                 }
-            }
+        //    }
 
-	 //   }
         catch (err) {
 	         console.log(err.stack);
 	    }
@@ -198,22 +186,22 @@ class admissionsController {
              const colWard = db.collection("wards");
 
             // Find one document by userid and sessiontoken
-            const sessionDocument = await colSessions.findOne({ $and: [{userid:{ $eq: new ObjectID(req.query.userid) }}, {sessiontoken:{$eq: req.query.sessiontoken}}] });
-            console.log(sessionDocument);
-            if(!sessionDocument)
-            {
-                // wrong session details
-                responseObject['message'] = "Request denied. See error for details.";
-                responseObject['error'] = "Invalid session.";
-            }
-            else if(new Date(Date.now()) > sessionDocument.expiry)
-            {
-                // session timed out
-                responseObject['message'] = "Request denied. See error for details.";
-                responseObject['error'] = "Session expired. Please log in again.";
-            }
-            else
-            {
+            // const sessionDocument = await colSessions.findOne({ $and: [{userid:{ $eq: new ObjectID(req.query.userid) }}, {sessiontoken:{$eq: req.query.sessiontoken}}] });
+            // console.log(sessionDocument);
+            // if(!sessionDocument)
+            // {
+            //     // wrong session details
+            //     responseObject['message'] = "Request denied. See error for details.";
+            //     responseObject['error'] = "Invalid session.";
+            // }
+            // else if(new Date(Date.now()) > sessionDocument.expiry)
+            // {
+            //     // session timed out
+            //     responseObject['message'] = "Request denied. See error for details.";
+            //     responseObject['error'] = "Session expired. Please log in again.";
+            // }
+            // else
+            // {
                 // session found 
                 // Find document by recordnumber
                 const patientDocument = await colPatients.findOne({_id:{ $eq: new ObjectID(req.params.recordnumber) }});
@@ -248,7 +236,7 @@ class admissionsController {
                          
             }
 
-	    }
+	   // }
         catch (err) {
 	         console.log(err.stack);
 	    }

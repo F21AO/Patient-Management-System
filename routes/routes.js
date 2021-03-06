@@ -21,7 +21,8 @@ module.exports = function (app) {
   //Routes
   app.post("/patients/register", patientsController.patientsignup);
   app.get("/patients/:recordnumber", patientsController.patientlookup);
-  app.get("/wards/admit", admissionsController.patientadmission);
+  app.post("/wards/admit", admissionsController.patientadmission);
+  app.get("/wards/:recordnumber", admissionsController.admissionlookup);
   app.put("/patients/refer/:recordnumber", patientsController.patientreferals);
 
 };
