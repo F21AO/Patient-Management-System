@@ -59,6 +59,7 @@ class admissionsController {
 
              // Check for duplicate record
             const existingDocument = await colAdmissions.findOne({patientid:{ $eq: req.body.patientid }});
+
             if(existingDocument)
             {
                 // admission already in system
@@ -69,15 +70,15 @@ class admissionsController {
                 // create patient object and push to response object
 
                 var aObject = {};
-                aObject['id'] = findAdmissionDetails._id;
-                aObject['registeredby'] = findAdmissionDetails.registeredby;
-                aObject['patientid'] = findAdmissionDetails.patientid;
-                aObject['doctorid'] = findAdmissionDetails.doctorid;
-                aObject['wardid'] = findAdmissionDetails.wardid;
-                aObject['admittedon'] = findAdmissionDetails.admittedon;
-                aObject['discharged'] = findAdmissionDetails.discharged;
-                aObject['reason'] = findAdmissionDetails.reason;
-                aObject['deptid'] = findAdmissionDetails.deptid;
+                aObject['id'] = existingDocument._id;
+                aObject['registeredby'] = existingDocument.registeredby;
+                aObject['patientid'] = existingDocument.patientid;
+                aObject['doctorid'] = existingDocument.doctorid;
+                aObject['wardid'] = existingDocument.wardid;
+                aObject['admittedon'] = existingDocument.admittedon;
+                aObject['discharged'] = existingDocument.discharged;
+                aObject['reason'] = existingDocument.reason;
+                aObject['deptid'] = existingDocument.deptid;
                 responseObject['admission'] = aObject;
             }
             else
