@@ -403,7 +403,7 @@ class patientsController {
     responseObject['error'] = "None";
     
     // Fetch query parameter
-    if(Object.hasOwnProperty.call(req.body, "referedby") && Object.hasOwnProperty.call(req.body, "services") && Object.hasOwnProperty.call(req.body, "recordnumber"))
+    if(Object.hasOwnProperty.call(req.body, "referedby") && Object.hasOwnProperty.call(req.body, "services") && Object.hasOwnProperty.call(req.params, "recordnumber"))
     {
         var referedby = req.body.referedby; 
         var services = req.body.services;
