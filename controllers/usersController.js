@@ -10,15 +10,31 @@ const DB_NAME = "patients";
 
 class usersController {
 
+  // Function to log a user in and create a 2-hour session 
   static async userlogin(req, res) {
-    // Fetch query parameter
-    var username = req.body.username; 
-    var password = req.body.password;
+    
+    console.log("Post made - LOGIN");
 
     // create response object with initial values
     var responseObject = {};
     responseObject['message'] = "None";
     responseObject['error'] = "None";
+
+    // Fetch query parameters
+    if(Object.hasOwnProperty.call(req.body, "username") && Object.hasOwnProperty.call(req.body, "password"))
+    {
+        var username = req.body.username; 
+        var password = req.body.password;
+    }
+    else
+    {
+        // missing parameter details
+        responseObject['message'] = "Request denied. See error for details.";
+        responseObject['error'] = "Missing details in request body.";
+        res.status(400);
+        res.send(responseObject);
+        return;
+    }
 
     async function run() {
 	    try {
@@ -39,12 +55,13 @@ class usersController {
                 // wrong credentials
                 responseObject['message'] = "Login failed. See error for details.";
                 responseObject['error'] = "Invalid username/password.";
-                res.status(403);
+                res.status(401);
             }
             else
             {
                 // user found 
                 // create session token and session document
+                // ideally, token should be a JWT token but due to time constraints, we use a randomized value
                 let token = Math.random().toString(36).substr(2, 10);
                 let sessionDocument = 
                 {
@@ -57,7 +74,6 @@ class usersController {
                 const insertSession = await colSessions.insertOne(sessionDocument);
                 // Find inserted document
                 const findSession = await colSessions.findOne({ userid: { $eq: sessionDocument.userid } });
-                // Print to the console
 
                 if(!findSession)
                 {
@@ -86,13 +102,16 @@ class usersController {
 
             }
 	    }
-        catch (err) {
+        catch (err) 
+        {
            res.status(500);
-	         console.log(err.stack);
+           res.send(err);
+	       console.log(err.stack);
 	    }
-	    finally {
-	        //await client.close();
-            
+	    finally 
+        {
+            // commentated because it causes issues in request reloads
+	        //await client.close();  
 	    }
 
         // send response object

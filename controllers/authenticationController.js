@@ -28,6 +28,8 @@ class authenticationController {
       const sessionDocument = await colSessions.findOne({ $and: [{userid:{ $eq: new ObjectID(userid) }}, {sessiontoken:{$eq: sessiontoken}}] });
       return sessionDocument;
     } catch (err) {
+      
+      res.send(err);
       console.log(err.stack);
     }
     finally {
