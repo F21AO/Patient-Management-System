@@ -229,8 +229,8 @@ class admissionsController {
                 responseObject['patient'] = patientDocument;
 
             }    
-
-	    }
+        }
+	   // }
         catch (err) {
             res.status(500);
             res.send(err);
