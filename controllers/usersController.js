@@ -85,7 +85,6 @@ class usersController {
                 }
 
             }
-
 	    }
         catch (err) {
            res.status(500);
