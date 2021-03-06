@@ -15,7 +15,7 @@ class admissionsController {
     
     console.log("Post made - ADMIT");
     // Fetch query parameter
-    var userid = req.body.userid; 
+    var registeredby = req.body.registeredby; 
     var sessiontoken = req.body.sessiontoken;
     var patientid = req.body.patientid;
     var doctorid = req.body.doctorid;
@@ -46,7 +46,7 @@ class admissionsController {
              const colAdmissions = db.collection("admissions");
 
             // Find one document by userid and sessiontoken
-            const sessionDocument = await colSessions.findOne({ $and: [{userid:{ $eq: new ObjectID(req.body.userid) }}, {sessiontoken:{$eq: req.body.sessiontoken}}] });
+            const sessionDocument = await colSessions.findOne({sessiontoken:{$eq: req.body.sessiontoken} });
             if(!sessionDocument)
             {
                 // wrong session details
@@ -61,17 +61,18 @@ class admissionsController {
             }
             else
             {
-                // session found 
-                // Check access level by userid
-                const accessDocument = await colUsers.findOne({_id:{ $eq: new ObjectID(req.body.userid) }});
-                if(!accessDocument)
-                {
-                    // wrong user details
-                    responseObject['message'] = "Request denied. See error for details.";
-                    responseObject['error'] = "Cannot find user.";
-                }
-                else
-                {
+                // // session found 
+                // // Check access level by userid
+                // const accessDocument = await colUsers.findOne({_id:{ $eq: new ObjectID(req.body.userid) }});
+                // if(!accessDocument)
+                // {
+                //     // wrong user details
+                //     responseObject['message'] = "Request denied. See error for details.";
+                //     responseObject['error'] = "Cannot find user.";
+                // }
+                // else
+                // {
+                    
                     // access allowed 
                     // Check for duplicate record
                     const existingDocument = await colAdmissions.findOne({patientid:{ $eq: req.body.patientid }});
@@ -84,7 +85,8 @@ class admissionsController {
                         // create patient object and push to response object
 
                         var aObject = {};
-                        aObject['userid'] = findAdmissionDetails._id;
+                        aObject['id'] = findAdmissionDetails._id;
+                        aObject['registeredby'] = findAdmissionDetails.registeredby;
                         aObject['patientid'] = findAdmissionDetails.patientid;
                         aObject['doctorid'] = findAdmissionDetails.doctorid;
                         aObject['wardid'] = findAdmissionDetails.wardid;
@@ -99,7 +101,7 @@ class admissionsController {
                         // create patient document
                         let admissionDocument = 
                         {
-                            "userid":req.body.userid,
+                            "registeredby":req.body.registeredby,
                             "patientid": req.body.patientid,
                             "doctorid": req.body.doctorid, 
                             "wardid": req.body.wardid,     
@@ -131,7 +133,8 @@ class admissionsController {
                     
                            // create admission object and push to response object
                             var aObject = {};
-                            aObject['userid'] = findAdmissionDetails._id;
+                            aObject['id'] = findAdmissionDetails._id;
+                            aObject['registeredby'] = findAdmissionDetails.registeredby;
                             aObject['patientid'] = findAdmissionDetails.patientid;
                             aObject['doctorid'] = findAdmissionDetails.doctorid;
                             aObject['wardid'] = findAdmissionDetails.wardid;
@@ -148,7 +151,7 @@ class admissionsController {
                 }
             }
 
-	    }
+	 //   }
         catch (err) {
 	         console.log(err.stack);
 	    }
