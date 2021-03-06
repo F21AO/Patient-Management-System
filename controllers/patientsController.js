@@ -202,16 +202,18 @@ class patientsController {
 
     async function run() {
 	    try {
+
             await client.connect();
             console.log("Connected correctly to server");
             const db = client.db(DB_NAME);
 
-            // Use the collection "patients", "users", "services"
+            // Use the collection "patients", "sessions", "services"
             const colPatients = db.collection("patients");
             const colServices = db.collection("services");
             const colUsers    = db.collection("users");
 
-            // Find document by recordnumber
+            // access allowed 
+            // Find document by recordnumbers
             const patientDocument = await colPatients.findOne({_id:{ $eq: new ObjectID(recordnumber) }});
             console.log(patientDocument);
             if(!patientDocument)
@@ -231,17 +233,15 @@ class patientsController {
                 var referals = {};
                 if(patientDocument.referals) {
                     
-                    if(patientDocument.referals.services)
-                    {
-                        //performing the map function because services is an array
+                    if(patientDocument.referals.services){
+                        //performing the map function cause services is an array
                         var serviceIds = patientDocument.referals.services.map(function(id) { return ObjectID(id); });
                         var services = await colServices.find({_id: {$in: serviceIds}}).toArray();
 
+                        console.log(services);
                         referals["services"] = services;
                     }
-                    
-                    if(patientDocument.referals.referedby)
-                     {
+                    if(patientDocument.referals.referedby) {
                         var referby = await colUsers.findOne({_id: {$eq: ObjectID(patientDocument.referals.referedby)}});
 
                         if(referby) {
@@ -253,18 +253,18 @@ class patientsController {
                     }
                 }
 
-                // create patient object and push to response object
-                var patientObject = {};
-                patientObject['recordnumber'] = patientDocument._id;
-                patientObject['email']        = patientDocument.email;
-                patientObject['name']         = patientDocument.name;
-                patientObject['gender']       = patientDocument.gender;
-                patientObject['birthdate']    = patientDocument.birthdate;
-                patientObject['diseases']     = patientDocument.diseases;
-                patientObject['allergies']    = patientDocument.allergies;
-                patientObject['referals']     = referals;
-                responseObject['patient']     = patientObject;
-            }
+            //     // create patient object and push to response object
+            //     var patientObject = {};
+            //     patientObject['recordnumber'] = patientDocument._id;
+            //     patientObject['email']        = patientDocument.email;
+            //     patientObject['name']         = patientDocument.name;
+            //     patientObject['gender']       = patientDocument.gender;
+            //     patientObject['birthdate']    = patientDocument.birthdate;
+            //     patientObject['diseases']     = patientDocument.diseases;
+            //     patientObject['allergies']    = patientDocument.allergies;
+            //     patientObject['referals']     = referals;
+            //     responseObject['patient']     = patientObject;
+            // }
             
                //retrieve admissions details.
                const colAdmissions = db.collection("admissions");
@@ -304,7 +304,7 @@ class patientsController {
                patientObject['referals'] = referals;
                patientObject['admissions'] = admissions;
                responseObject['patient'] = patientObject;
-              
+            } 
 
 	    }
         catch (err) 
