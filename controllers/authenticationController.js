@@ -31,7 +31,7 @@ class authenticationController {
       console.log(err.stack);
     }
     finally {
-      await client.close();
+      // await client.close();
     }
     return sessionDocument;
   }

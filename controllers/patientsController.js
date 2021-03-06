@@ -147,7 +147,7 @@ class patientsController {
 	         console.log(err.stack);
 	    }
 	    finally {
-	        await client.close();
+	        // await client.close();
 	    }
 
         // send response object
@@ -243,7 +243,7 @@ class patientsController {
 	        console.log(err.stack);
 	    }
 	    finally {
-	        await client.close();
+	        // await client.close();
 	    }
 
         // send response object
@@ -255,8 +255,7 @@ class patientsController {
 
   static async patientreferals(req, res) {
     //authentication
-    var userid = req.body.userid; 
-    var sessiontoken = req.body.sessiontoken;
+    var referedby = req.body.referedby; 
     var services = req.body.services;
     var recordnumber = req.params.recordnumber; 
 
@@ -276,7 +275,7 @@ class patientsController {
 
             //create referals object
             var referals = {
-                "referedby" : userid,
+                "referedby" : referedby,
                 "services": services
             }
 
@@ -305,7 +304,7 @@ class patientsController {
 	        console.log(err.stack);
 	    }
 	    finally {
-	        await client.close();
+	        // await client.close();
 	    }
 
         // send response object
