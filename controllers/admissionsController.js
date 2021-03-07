@@ -152,7 +152,7 @@ class admissionsController {
 	}
 	
 	run().catch(console.dir);
-  }//here
+  }
   
 
 
