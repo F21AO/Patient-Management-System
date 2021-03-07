@@ -469,6 +469,85 @@ class patientsController {
 
     run().catch(console.dir);
   }
+
+   // Function to update a patient's diseases details by recordnumber
+   static async patientdiseases(req, res) {
+
+    // create response object with initial values
+    var responseObject = {};
+    responseObject['message'] = "None";
+    responseObject['error'] = "None";
+    
+    // Fetch query parameter
+    if(Object.hasOwnProperty.call(req.body, "diseases") && Object.hasOwnProperty.call(req.params, "recordnumber"))
+    {
+        var diseases = req.body.diseases; 
+        var recordnumber = req.params.recordnumber; 
+    }
+    else
+    {
+        // missing parameter details
+        responseObject['message'] = "Request denied. See error for details.";
+        responseObject['error'] = "Missing details in request body.";
+        res.status(400);
+        res.send(responseObject);
+        return;
+    }
+
+    async function run() {
+        try {
+            
+            await client.connect();
+            console.log("Connected correctly to server");
+            const db = client.db(DB_NAME);
+    
+            // Use the collection "patients"
+            const colPatients = db.collection("patients");
+ 
+            
+                console.log(recordnumber);
+                //find and update the patient document with referals details
+                const patientDocument = await colPatients.findOneAndUpdate(
+                    { _id: ObjectID(recordnumber)},
+                    { $push: { diseases: { $each: diseases } } },
+                    {returnNewDocument:true}
+                );
+ 
+                console.log(patientDocument.diseases);
+                console.log(patientDocument.email);
+                if(!patientDocument)
+                {
+                    // record not found
+                    responseObject['message'] = "Request failed. See error for details.";
+                    responseObject['error'] = "A record with this number does not exist in the system.";
+                    res.status(404);
+                }
+                else
+                {
+                    //return success
+                    responseObject['message'] = "Request successful.";
+                    responseObject['error'] = "None.";
+                }            
+            
+        }
+        catch (err) {
+            console.log(err.stack);
+            res.status(500);
+            res.send(err);
+        }
+        finally {
+            //await client.close();
+            
+        }
+ 
+        // send response object
+        res.send(responseObject);
+    }
+
+    run().catch(console.dir);
+  }
+  
 }
+
 
 module.exports = patientsController;

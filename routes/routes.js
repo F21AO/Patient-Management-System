@@ -20,6 +20,7 @@ module.exports = function (app) {
   app.use(authenticateUser.isAuthorized);
 
   //Post-login Routes:
+  app.put("/patients/diseases/:recordnumber", patientsController.patientdiseases);
   app.post("/patients/register", patientsController.patientsignup);
   app.get("/patients/:recordnumber", patientsController.patientlookup);
   app.get("/patients", patientsController.allpatients);
