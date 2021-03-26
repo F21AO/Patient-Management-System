@@ -13,3 +13,5 @@ app.listen(port, () => {
     console.log(`Task API app is listening at http://localhost:${port}`);
 
 });
+
+module.exports = app;

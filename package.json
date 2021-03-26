@@ -4,7 +4,7 @@
   "description": "System for creating and managing patients at a tertiary care hospital",
   "main": "index.js",
   "scripts": {
-    "test": "test"
+    "test": "mocha --timeout 30000 ./test/**/*.js --exit"
   },
   "repository": {
     "type": "git",
@@ -24,5 +24,10 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.4",
     "mongoose": "^5.11.17"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "mocha": "^8.3.2",
+    "supertest": "^6.1.3"
   }
 }
