@@ -1,0 +1,10 @@
+{
+    "registeredby" : "60302c3e59ae5a256dd6969e",
+    "patientid" : "6037636cdd28db57d871ac88",
+    "doctorid" : "60302bbf38fe7725199eedc1",
+    "wardid" : "60365a18d35df3c5d8769dc7",
+    "admittedon": "2021-02-20T11:52:43.276+00:00",
+    "discharged": false,
+    "reason":"test2",
+    "deptid": "60377590ca601ba72d1f34c1"
+}

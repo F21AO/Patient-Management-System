@@ -1,0 +1,11 @@
+{
+    "userid" : "60302c3e59ae5a256dd6969e",
+    "firstname" : "John",
+    "lastname" : "Wick",
+    "email" : "john@example.com",
+    "birthdate" : "06/03/1985",
+    "gender" : "male",
+    "diseases" : ["Fever", "cold"],
+    "allergies" : ["peanuts"],
+    "wardnumber" : "60376d2dca601ba72d1f34c0"
+}
